@@ -35,6 +35,11 @@ DIST = NUM_RAYS / (2 * math.tan(HALF_FOV))
 PROJ_COEFF = DIST * TILE_SIZE
 SCALE = WIDTH // NUM_RAYS                       # scaling coef
 
+#TEXTTURE SETTINGS
+TEXTURE_WIDTH = 1200
+TEXTURE_HEIGHT = 1200
+TEXTURE_SCALE = TEXTURE_WIDTH // TILE_SIZE
+
 # COLORS
 @dataclass
 class Colors:
@@ -47,3 +52,4 @@ class Colors:
     PURPLE = (120, 0, 120)
     SKYBLUE = (0, 186, 255)
     YELLOW = (220, 220, 0)
+    SANDY = (244, 164, 96)

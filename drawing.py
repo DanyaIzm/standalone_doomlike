@@ -12,13 +12,21 @@ class Drawing:
         self.screen = screen
         self.minimap_surface = minimap_surface
         self.font = pygame.font.SysFont('Arial', 36, bold=True)
+        self.textures = {
+            '1': pygame.image.load('img/1.png').convert(),
+            '2': pygame.image.load('img/2.png').convert(),
+            'SKY': pygame.image.load('img/sky.png').convert(),
+        }
 
-    def draw_background(self):
-        pygame.draw.rect(self.screen, Colors.SKYBLUE, (0, 0, settings.WIDTH, settings.HALF_HEIGHT))
+    def draw_background(self, angle):
+        sky_offset = -5 * math.degrees(angle) % settings.WIDTH
+        self.screen.blit(self.textures['SKY'], (sky_offset, 0))
+        self.screen.blit(self.textures['SKY'], (sky_offset - settings.WIDTH, 0))
+        self.screen.blit(self.textures['SKY'], (sky_offset + settings.WIDTH, 0))
         pygame.draw.rect(self.screen, Colors.DARKGREY, (0, settings.HALF_HEIGHT, settings.WIDTH, settings.HALF_HEIGHT))
     
     def draw_world(self, player_pos, player_angle):
-        ray_casting(self.screen, player_pos, player_angle)
+        ray_casting(self.screen, player_pos, player_angle, self.textures)
     
     def draw_fps(self, clock):
         display_fps = str(int(clock.get_fps()))
@@ -42,6 +50,6 @@ class Drawing:
 
         # DRAW MAP
         for x, y in mini_world_map:
-            pygame.draw.rect(self.minimap_surface, Colors.GREEN, (x, y, settings.MAP_TILE_SIZE, settings.MAP_TILE_SIZE))
+            pygame.draw.rect(self.minimap_surface, Colors.SANDY, (x, y, settings.MAP_TILE_SIZE, settings.MAP_TILE_SIZE))
 
         self.screen.blit(self.minimap_surface, settings.MAP_POS)

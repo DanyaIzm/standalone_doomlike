@@ -6,7 +6,6 @@ from settings import Colors
 
 from player import Player
 from drawing import Drawing
-from map import mini_world_map
 
 
 pygame.init()
@@ -29,7 +28,7 @@ while True:
 
     screen.fill(Colors.BLACK)
 
-    drawing.draw_background()
+    drawing.draw_background(player.angle)
     drawing.draw_world(player.pos, player.angle)
     drawing.draw_minimap(player)
     drawing.draw_fps(clock)

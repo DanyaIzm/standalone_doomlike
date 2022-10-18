@@ -1,11 +1,11 @@
-# Standalone DOOMlike gam 
+# Standalone DOOMlike game
 
 Игра в стиле старого DOOM, сделанная по туториалам от Standalone Coder (Youtube)
 
 ### Прогресс:
 - [x] 1 урок
 - [x] 2 урок
-- [ ] 3 урок
+- [x] 3 урок
 - [ ] 4 урок
 - [ ] 5 урок
 - [ ] 6 урок

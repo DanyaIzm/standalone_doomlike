@@ -9,7 +9,7 @@ def _mapping(a, b):
     return (a // settings.TILE_SIZE) * settings.TILE_SIZE, (b // settings.TILE_SIZE) * settings.TILE_SIZE
 
 
-def ray_casting(screen, player_pos, player_angle):
+def ray_casting(screen, player_pos, player_angle, textures):
     xo, yo = player_pos
     xm, ym = _mapping(xo, yo)
     current_angle = player_angle - settings.HALF_FOV
@@ -23,9 +23,11 @@ def ray_casting(screen, player_pos, player_angle):
 
         for i in range(0, settings.WIDTH, settings.TILE_SIZE):
             depth_v = (x - xo) / angle_cos
-            y = yo + depth_v * angle_sin
+            yv = yo + depth_v * angle_sin
+            tile_v = _mapping(x + dx, yv)
 
-            if _mapping(x + dx, y) in world_map:
+            if tile_v in world_map:
+                texture_v = world_map[tile_v]
                 break
             x += dx * settings.TILE_SIZE
 
@@ -34,17 +36,23 @@ def ray_casting(screen, player_pos, player_angle):
 
         for i in range(0, settings.HEIGHT, settings.TILE_SIZE):
             depth_h = (y - yo) / angle_sin
-            x = xo + depth_h * angle_cos
+            xh = xo + depth_h * angle_cos
+            tile_h = _mapping(xh, y + dy)
 
-            if _mapping(x, y + dy) in world_map:
+            if tile_h in world_map:
+                texture_h = world_map[tile_h]
                 break
             y += dy * settings.TILE_SIZE
         
-        depth = depth_v if depth_v < depth_h else depth_h
+        depth, offset, texture = (depth_v, yv, texture_v) if depth_v < depth_h else (depth_h, xh, texture_h)
+        offset = int(offset) % settings.TILE_SIZE
         depth *= math.cos(player_angle - current_angle)
+        depth = max(depth, 0.00001)
 
-        proj_height = settings.PROJ_COEFF / depth
-        color_depth = 255 / (1 + depth * depth * 0.00002)
-        color = (color_depth, color_depth // 2, color_depth // 3)
-        pygame.draw.rect(screen, color, (ray * settings.SCALE, settings.HALF_HEIGHT - proj_height // 2, settings.SCALE, proj_height))
+        proj_height = min(int(settings.PROJ_COEFF / depth), settings.HEIGHT * 2)
+        
+        wall_column = textures[texture].subsurface(offset * settings.TEXTURE_SCALE, 0, settings.TEXTURE_SCALE, settings.TEXTURE_HEIGHT)
+        wall_column = pygame.transform.scale(wall_column, (settings.SCALE, proj_height))
+        screen.blit(wall_column, (ray * settings.SCALE, settings.HALF_HEIGHT - proj_height // 2))
+
         current_angle += settings.DELTA_ANGLE
