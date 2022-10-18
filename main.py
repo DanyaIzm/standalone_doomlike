@@ -5,13 +5,17 @@ import settings
 from settings import Colors
 
 from player import Player
-from map import world_map
-from ray_casting import ray_casting
+from drawing import Drawing
+from map import mini_world_map
 
 
 pygame.init()
 screen = pygame.display.set_mode((settings.WIDTH, settings.HEIGHT))
+minimap_surface = pygame.Surface((settings.WIDTH // settings.MAP_SCALE, settings.HEIGHT // settings.MAP_SCALE))
+
 clock = pygame.time.Clock()
+
+drawing = Drawing(screen, minimap_surface)
 
 player = Player()
 
@@ -25,24 +29,10 @@ while True:
 
     screen.fill(Colors.BLACK)
 
-    pygame.draw.rect(screen, Colors.BLUE, (0, 0, settings.WIDTH, settings.HALF_HEIGHT))
-    pygame.draw.rect(screen, Colors.DARKGREY, (0, settings.HALF_HEIGHT, settings.WIDTH, settings.HALF_HEIGHT))
-
-    ray_casting(screen, player.pos, player.angle)
-
-    # # DRAW PLAYER
-    # pygame.draw.circle(screen, Colors.GREEN, player.pos, 20)
-    # pygame.draw.line(
-    #     screen,
-    #     Colors.GREEN,
-    #     player.pos,
-    #     (player.x + settings.WIDTH * math.cos(player.angle),
-    #      player.y + settings.HEIGHT * math.sin(player.angle))
-    # )
-
-    # # DRAW MAP
-    # for x, y in world_map:
-    #     pygame.draw.rect(screen, Colors.DARKGREY, (x, y, settings.TILE_SIZE, settings.TILE_SIZE), 2)
+    drawing.draw_background()
+    drawing.draw_world(player.pos, player.angle)
+    drawing.draw_minimap(player)
+    drawing.draw_fps(clock)
 
     pygame.display.flip()
     clock.tick(settings.FPS)
