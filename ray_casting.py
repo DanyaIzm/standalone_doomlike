@@ -2,7 +2,7 @@ import pygame
 import math
 
 import settings
-from map import world_map
+from map import world_map, WORLD_WIDTH, WORLD_HEIGHT
 
 
 def _mapping(a, b):
@@ -11,6 +11,7 @@ def _mapping(a, b):
 
 def ray_casting(player, textures):
     walls = []
+    texture_v, texture_h = 1, 1
     xo, yo = player.pos
     xm, ym = _mapping(xo, yo)
     current_angle = player.angle - settings.HALF_FOV
@@ -22,7 +23,7 @@ def ray_casting(player, textures):
         # VERTICALS
         x, dx = (xm + settings.TILE_SIZE, 1) if angle_cos >= 0 else (xm, -1)
 
-        for i in range(0, settings.WIDTH, settings.TILE_SIZE):
+        for _ in range(0, WORLD_WIDTH, settings.TILE_SIZE):
             depth_v = (x - xo) / angle_cos
             yv = yo + depth_v * angle_sin
             tile_v = _mapping(x + dx, yv)
@@ -35,7 +36,7 @@ def ray_casting(player, textures):
         # HORIZONTALS
         y, dy = (ym + settings.TILE_SIZE, 1) if angle_sin >= 0 else (ym, -1)
 
-        for i in range(0, settings.HEIGHT, settings.TILE_SIZE):
+        for _ in range(0, WORLD_HEIGHT, settings.TILE_SIZE):
             depth_h = (y - yo) / angle_sin
             xh = xo + depth_h * angle_cos
             tile_h = _mapping(xh, y + dy)
@@ -50,7 +51,7 @@ def ray_casting(player, textures):
         depth *= math.cos(player.angle - current_angle)
         depth = max(depth, 0.00001)
 
-        proj_height = min(int(settings.PROJ_COEFF / depth), settings.HEIGHT * 2)
+        proj_height = min(int(settings.PROJ_COEFF / depth), settings.PENTA_HEIGHT)
         
         wall_column = textures[texture].subsurface(offset * settings.TEXTURE_SCALE, 0, settings.TEXTURE_SCALE, settings.TEXTURE_HEIGHT)
         wall_column = pygame.transform.scale(wall_column, (settings.SCALE, proj_height))

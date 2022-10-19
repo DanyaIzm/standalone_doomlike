@@ -13,7 +13,7 @@ from drawing import Drawing
 
 pygame.init()
 screen = pygame.display.set_mode((settings.WIDTH, settings.HEIGHT))
-minimap_surface = pygame.Surface((settings.WIDTH // settings.MAP_SCALE, settings.HEIGHT // settings.MAP_SCALE))
+minimap_surface = pygame.Surface(settings.MINIMAP_RESOLUTION)
 
 clock = pygame.time.Clock()
 
