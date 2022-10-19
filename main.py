@@ -23,7 +23,7 @@ pygame.mouse.set_visible(False)
 drawing = Drawing(screen, minimap_surface)
 
 sprites = sprite_object.Sprites()
-player = Player()
+player = Player(sprites)
 
 
 while True:

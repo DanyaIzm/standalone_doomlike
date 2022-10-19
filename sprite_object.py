@@ -16,6 +16,7 @@ class Sprites:
                 'animation': deque([pygame.image.load(f'sprites/barrel/anim/{i}.png').convert_alpha() for i in range(12)]),
                 'animation_distance': 800, 
                 'animation_speed': 10,
+                'blocked': True,
             },
             'sprite_pin': {
                 'sprite': pygame.image.load('sprites/pin/base/0.png').convert_alpha(),
@@ -47,7 +48,7 @@ class Sprites:
                     [pygame.image.load(f'sprites/flame/anim/{i}.png').convert_alpha() for i in range(16)]),
                 'animation_distance': 800,
                 'animation_speed': 5,
-                'blocked': None,
+                'blocked': False,
             },
         }
         self.list_of_objects = [
@@ -68,8 +69,11 @@ class SpriteObject:
         self.animation = parameters['animation']
         self.animation_distance = parameters['animation_distance']
         self.animation_speed = parameters['animation_speed']
+        self.blocked = parameters['blocked']
+        self.side = 30
         self.animation_count = 0
-        self.pos = self.x, self.y = pos[0] * settings.TILE_SIZE, pos[1] * settings.TILE_SIZE
+        self.x, self.y = pos[0] * settings.TILE_SIZE, pos[1] * settings.TILE_SIZE
+        self.pos = self.x - self.side // 2, self.y - self.side // 2
 
         if self.viewing_angles:
             self.sprite_angles = [frozenset(range(i, i + 45)) for i in range(0, 360, 45)]

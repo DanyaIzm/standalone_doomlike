@@ -1,3 +1,5 @@
+import pygame
+
 import settings
 
 _ = False
@@ -27,8 +29,13 @@ WORLD_HEIGHT = len(matrix_map) * settings.TILE_SIZE
 world_map = {}
 mini_world_map = set()
 
+collision_walls = []
+
 for j, row in enumerate(matrix_map):
     for i, tile_type in enumerate(row):
         if tile_type:
+            collision_walls.append(
+                pygame.Rect(i * settings.TILE_SIZE, j * settings.TILE_SIZE, settings.TILE_SIZE, settings.TILE_SIZE)
+            )
             mini_world_map.add((i * settings.MAP_TILE_SIZE, j * settings.MAP_TILE_SIZE))
             world_map[(i * settings.TILE_SIZE, j * settings.TILE_SIZE)] = tile_type
