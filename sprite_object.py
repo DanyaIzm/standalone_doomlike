@@ -32,11 +32,7 @@ class SpriteObject:
             self.sprite_angles = [frozenset(range(i, i + 45)) for i in range(0, 360, 45)]
             self.sprite_positions = {angle: pos for angle, pos in zip(self.sprite_angles, self.object)}
     
-    def object_locate(self, player, walls):
-        fake_walls0 = [walls[0] for i in range(settings.FAKE_RAYS)]
-        fake_walls1 = [walls[-1] for i in range(settings.FAKE_RAYS)]
-        fake_walls = fake_walls0 + walls + fake_walls1
-
+    def object_locate(self, player):
         dx, dy = self.x - player.x, self.y - player.y
         distance_to_sprite = math.sqrt(dx ** 2 + dy ** 2)
 
@@ -51,8 +47,8 @@ class SpriteObject:
         distance_to_sprite *= math.cos(settings.HALF_FOV - current_ray * settings.DELTA_ANGLE)
 
         fake_ray = current_ray + settings.FAKE_RAYS
-        if 0 <= fake_ray <= settings.NUM_RAYS - 1 + 2 * settings.FAKE_RAYS and distance_to_sprite < fake_walls[fake_ray][0]:
-            proj_height = int(settings.PROJ_COEFF / distance_to_sprite * self.scale)
+        if 0 <= fake_ray <= settings.FAKE_RAYS_RANGE and distance_to_sprite > 30:
+            proj_height = min(int(settings.PROJ_COEFF / distance_to_sprite * self.scale), settings.DOUBLE_HEIGHT)
             half_proj_height = proj_height // 2
             shift = half_proj_height + self.shift
 
