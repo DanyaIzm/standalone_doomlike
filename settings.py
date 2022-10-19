@@ -13,7 +13,7 @@ FPS_POS = (WIDTH - 65, 5)
 FPS = 60
 
 # PLAYER SETTINGS
-PLAYER_START_POS = (HALF_WIDTH, HALF_HEIGHT)
+PLAYER_START_POS = (HALF_WIDTH // 4, HALF_HEIGHT - 50)
 PLAYER_START_ANGLE = 0
 PLAYER_NORMAL_SPEED = 2
 
@@ -32,13 +32,18 @@ NUM_RAYS = 300                                  # amount of rays
 MAX_DEPTH = 800                                 # drawing distance
 DELTA_ANGLE = FOV / NUM_RAYS
 DIST = NUM_RAYS / (2 * math.tan(HALF_FOV))
-PROJ_COEFF = DIST * TILE_SIZE
+PROJ_COEFF = 3 * DIST * TILE_SIZE
 SCALE = WIDTH // NUM_RAYS                       # scaling coef
 
-#TEXTTURE SETTINGS
+#TEXTURE SETTINGS
 TEXTURE_WIDTH = 1200
 TEXTURE_HEIGHT = 1200
 TEXTURE_SCALE = TEXTURE_WIDTH // TILE_SIZE
+
+# SPRITE SETTINGS
+DOUBLE_PI = 2 * math.pi
+CENTRAL_RAY = NUM_RAYS // 2 - 1
+FAKE_RAYS = 100
 
 # COLORS
 @dataclass
@@ -53,3 +58,5 @@ class Colors:
     SKYBLUE = (0, 186, 255)
     YELLOW = (220, 220, 0)
     SANDY = (244, 164, 96)
+    DARKBROWN = (97, 61, 25)
+    DARKORANGE = (255, 140, 0)

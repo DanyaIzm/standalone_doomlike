@@ -4,6 +4,9 @@ import math
 import settings
 from settings import Colors
 
+import sprite_object
+from ray_casting import ray_casting
+
 from player import Player
 from drawing import Drawing
 
@@ -16,6 +19,7 @@ clock = pygame.time.Clock()
 
 drawing = Drawing(screen, minimap_surface)
 
+sprites = sprite_object.Sprites()
 player = Player()
 
 
@@ -29,7 +33,10 @@ while True:
     screen.fill(Colors.BLACK)
 
     drawing.draw_background(player.angle)
-    drawing.draw_world(player.pos, player.angle)
+
+    walls = ray_casting(player, drawing.textures)
+    drawing.draw_world(walls + [obj.object_locate(player, walls) for obj in sprites.list_of_objects])
+
     drawing.draw_minimap(player)
     drawing.draw_fps(clock)
 

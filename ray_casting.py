@@ -9,10 +9,11 @@ def _mapping(a, b):
     return (a // settings.TILE_SIZE) * settings.TILE_SIZE, (b // settings.TILE_SIZE) * settings.TILE_SIZE
 
 
-def ray_casting(screen, player_pos, player_angle, textures):
-    xo, yo = player_pos
+def ray_casting(player, textures):
+    walls = []
+    xo, yo = player.pos
     xm, ym = _mapping(xo, yo)
-    current_angle = player_angle - settings.HALF_FOV
+    current_angle = player.angle - settings.HALF_FOV
 
     for ray in range(settings.NUM_RAYS):
         angle_sin = math.sin(current_angle)
@@ -46,13 +47,16 @@ def ray_casting(screen, player_pos, player_angle, textures):
         
         depth, offset, texture = (depth_v, yv, texture_v) if depth_v < depth_h else (depth_h, xh, texture_h)
         offset = int(offset) % settings.TILE_SIZE
-        depth *= math.cos(player_angle - current_angle)
+        depth *= math.cos(player.angle - current_angle)
         depth = max(depth, 0.00001)
 
         proj_height = min(int(settings.PROJ_COEFF / depth), settings.HEIGHT * 2)
         
         wall_column = textures[texture].subsurface(offset * settings.TEXTURE_SCALE, 0, settings.TEXTURE_SCALE, settings.TEXTURE_HEIGHT)
         wall_column = pygame.transform.scale(wall_column, (settings.SCALE, proj_height))
-        screen.blit(wall_column, (ray * settings.SCALE, settings.HALF_HEIGHT - proj_height // 2))
+        wall_pos = (ray * settings.SCALE, settings.HALF_HEIGHT - proj_height // 2)
 
+        walls.append((depth, wall_column, wall_pos))
         current_angle += settings.DELTA_ANGLE
+    
+    return walls

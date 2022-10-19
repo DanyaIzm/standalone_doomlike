@@ -13,24 +13,28 @@ class Drawing:
         self.minimap_surface = minimap_surface
         self.font = pygame.font.SysFont('Arial', 36, bold=True)
         self.textures = {
-            '1': pygame.image.load('img/1.png').convert(),
-            '2': pygame.image.load('img/2.png').convert(),
-            'SKY': pygame.image.load('img/sky.png').convert(),
+            '1': pygame.image.load('img/wall1.png').convert(),
+            '2': pygame.image.load('img/wall2.png').convert(),
+            'SKY': pygame.image.load('img/sky3.png').convert(),
         }
 
     def draw_background(self, angle):
-        sky_offset = -5 * math.degrees(angle) % settings.WIDTH
+        sky_offset = -10 * math.degrees(angle) % settings.WIDTH
         self.screen.blit(self.textures['SKY'], (sky_offset, 0))
         self.screen.blit(self.textures['SKY'], (sky_offset - settings.WIDTH, 0))
         self.screen.blit(self.textures['SKY'], (sky_offset + settings.WIDTH, 0))
         pygame.draw.rect(self.screen, Colors.DARKGREY, (0, settings.HALF_HEIGHT, settings.WIDTH, settings.HALF_HEIGHT))
     
-    def draw_world(self, player_pos, player_angle):
-        ray_casting(self.screen, player_pos, player_angle, self.textures)
-    
+    def draw_world(self, world_objects):
+        for object in sorted(world_objects, key=lambda x: x[0], reverse=True):
+            if object[0]:
+                _, object, object_pos = object
+                self.screen.blit(object, object_pos)
+
+
     def draw_fps(self, clock):
         display_fps = str(int(clock.get_fps()))
-        rendered_text = self.font.render(display_fps, 0, Colors.RED)
+        rendered_text = self.font.render(display_fps, 0, Colors.DARKORANGE)
         self.screen.blit(rendered_text, settings.FPS_POS)
 
     def draw_minimap(self, player):
@@ -50,6 +54,6 @@ class Drawing:
 
         # DRAW MAP
         for x, y in mini_world_map:
-            pygame.draw.rect(self.minimap_surface, Colors.SANDY, (x, y, settings.MAP_TILE_SIZE, settings.MAP_TILE_SIZE))
+            pygame.draw.rect(self.minimap_surface, Colors.DARKBROWN, (x, y, settings.MAP_TILE_SIZE, settings.MAP_TILE_SIZE))
 
         self.screen.blit(self.minimap_surface, settings.MAP_POS)
