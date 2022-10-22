@@ -5,7 +5,7 @@ import settings
 from settings import Colors
 
 import sprite_object
-from ray_casting import ray_casting
+from ray_casting import ray_casting_walls
 
 from player import Player
 from drawing import Drawing
@@ -37,7 +37,7 @@ while True:
 
     drawing.draw_background(player.angle)
 
-    walls = ray_casting(player, drawing.textures)
+    walls = ray_casting_walls(player, drawing.textures)
     drawing.draw_world(walls + [obj.object_locate(player) for obj in sprites.list_of_objects])
 
     drawing.draw_minimap(player)

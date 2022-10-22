@@ -1,20 +1,23 @@
 import pygame
 import math
+from numba import njit
 
 import settings
 from map import world_map, WORLD_WIDTH, WORLD_HEIGHT
 
 
+@njit(fastmath=True)
 def _mapping(a, b):
     return (a // settings.TILE_SIZE) * settings.TILE_SIZE, (b // settings.TILE_SIZE) * settings.TILE_SIZE
 
 
-def ray_casting(player, textures):
-    walls = []
+@njit(fastmath=True)
+def ray_casting(player_pos, player_angle, world_map):
+    casted_walls = []
     texture_v, texture_h = 1, 1
-    xo, yo = player.pos
+    xo, yo = player_pos
     xm, ym = _mapping(xo, yo)
-    current_angle = player.angle - settings.HALF_FOV
+    current_angle = player_angle - settings.HALF_FOV
 
     for ray in range(settings.NUM_RAYS):
         angle_sin = math.sin(current_angle)
@@ -48,16 +51,26 @@ def ray_casting(player, textures):
         
         depth, offset, texture = (depth_v, yv, texture_v) if depth_v < depth_h else (depth_h, xh, texture_h)
         offset = int(offset) % settings.TILE_SIZE
-        depth *= math.cos(player.angle - current_angle)
+        depth *= math.cos(player_angle - current_angle)
         depth = max(depth, 0.00001)
 
         proj_height = min(int(settings.PROJ_COEFF / depth), settings.PENTA_HEIGHT)
-        
+
+        casted_walls.append((depth, offset, proj_height, texture))
+        current_angle += settings.DELTA_ANGLE
+    
+    return casted_walls
+
+
+def ray_casting_walls(player, textures):
+    casted_walls = ray_casting(player.pos, player.angle, world_map)
+    walls = []
+
+    for ray, casted_values in enumerate(casted_walls):
+        depth, offset, proj_height, texture = casted_values
         wall_column = textures[texture].subsurface(offset * settings.TEXTURE_SCALE, 0, settings.TEXTURE_SCALE, settings.TEXTURE_HEIGHT)
         wall_column = pygame.transform.scale(wall_column, (settings.SCALE, proj_height))
         wall_pos = (ray * settings.SCALE, settings.HALF_HEIGHT - proj_height // 2)
-
         walls.append((depth, wall_column, wall_pos))
-        current_angle += settings.DELTA_ANGLE
     
     return walls
