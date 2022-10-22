@@ -12,20 +12,26 @@ class Player:
         self.angle = settings.PLAYER_START_ANGLE
         self.sensitivity = 0.004
 
+        # weapon parameters
+        self.shot = False
+
+        # mouse parameters
         self._last_mouse_position = settings.HALF_WIDTH
 
         # collision parameters
         self.side = 50
         self.rect = pygame.Rect(self.x, self.y, self.side, self.side)
-        self.collision_sprites = [pygame.Rect(*x.pos, x.side, x.side)
-                                  for x in sprites.list_of_objects
-                                  if x.blocked]
-        self.collision_list = collision_walls + self.collision_sprites
 
 
     @property
     def pos(self):
         return (int(self.x), int(self.y))
+
+    @property
+    def collision_list(self):
+        return collision_walls + [pygame.Rect(*x.pos, x.side, x.side)
+                                  for x in self.sprites.list_of_objects
+                                  if x.blocked]
 
     def detect_collision(self, dx, dy):
         next_rect = self.rect.copy()
@@ -98,6 +104,13 @@ class Player:
 
         if keys[pygame.K_RIGHT]:
             self.angle += 0.02
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1 and not self.shot:
+                    self.shot = True
     
     def _control_mouse(self):
         current_mouse_position = pygame.mouse.get_pos()[0]

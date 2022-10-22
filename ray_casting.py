@@ -64,6 +64,7 @@ def ray_casting(player_pos, player_angle, world_map):
 
 def ray_casting_walls(player, textures):
     casted_walls = ray_casting(player.pos, player.angle, world_map)
+    wall_shot = casted_walls[settings.CENTRAL_RAY][0], casted_walls[settings.CENTRAL_RAY][2]
     walls = []
 
     for ray, casted_values in enumerate(casted_walls):
@@ -83,4 +84,4 @@ def ray_casting_walls(player, textures):
             wall_pos = (ray * settings.SCALE, settings.HALF_HEIGHT - proj_height // 2)
         walls.append((depth, wall_column, wall_pos))
     
-    return walls
+    return walls, wall_shot

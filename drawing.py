@@ -1,5 +1,6 @@
 import pygame
 import math
+from collections import deque
 
 import settings
 from settings import Colors
@@ -8,9 +9,11 @@ from map import mini_world_map
 
 
 class Drawing:
-    def __init__(self, screen, minimap_surface):
+    def __init__(self, screen, minimap_surface, player):
         self.screen = screen
         self.minimap_surface = minimap_surface
+        self.player = player
+
         self.font = pygame.font.SysFont('Arial', 36, bold=True)
         self.textures = {
             1: pygame.image.load('img/wall3.png').convert(),
@@ -19,6 +22,23 @@ class Drawing:
             4: pygame.image.load('img/wall6.png').convert(),
             'SKY': pygame.image.load('img/sky1.png').convert(),
         }
+
+        # weapon parameters
+        self.weapon_base_sprite = pygame.image.load('sprites/weapons/shotgun/base/0.png').convert_alpha()
+        self.weapon_shot_animation = deque([pygame.image.load(f'sprites/weapons/shotgun/shot/{i}.png').convert_alpha()
+                                            for i in range(20)])
+        self.weapon_rect = self.weapon_base_sprite.get_rect()
+        self.weapon_pos = (settings.HALF_WIDTH - self.weapon_rect.width // 2, settings.HEIGHT - self.weapon_rect.height)
+        self.shot_length = len(self.weapon_shot_animation)
+        self.shot_length_count = 0
+        self.shot_animation_speed = 3
+        self.shot_anumaton_count = 0
+        self.shot_animation_trigger = True
+
+        # sfx parameters
+        self.sfx = deque([pygame.image.load(f'sprites/weapons/sfx/{i}.png').convert_alpha() for i in range(9)])
+        self.sfx_length = len(self.sfx)
+        self.sfx_length_count = 0
 
     def draw_background(self, angle):
         sky_offset = -10 * math.degrees(angle) % settings.WIDTH
@@ -32,6 +52,34 @@ class Drawing:
             if object[0]:
                 _, object, object_pos = object
                 self.screen.blit(object, object_pos)
+
+    def draw_player_weapon(self, shots):
+        if self.player.shot:
+            self.shot_projection = min(shots)[1] // 2
+            self.draw_bullet_sfx()
+            shot_sprite = self.weapon_shot_animation[0]
+            self.screen.blit(shot_sprite, self.weapon_pos)
+            self.shot_anumaton_count += 1
+            if self.shot_anumaton_count == self.shot_animation_speed:
+                self.weapon_shot_animation.rotate(-1)
+                self.shot_anumaton_count = 0
+                self.shot_length_count += 1
+                self.shot_animation_trigger = False
+            if self.shot_length_count == self.shot_length:
+                self.player.shot = False
+                self.shot_length_count = 0
+                self.sfx_length_count = 0
+                self.shot_animation_trigger = True
+        else:
+            self.screen.blit(self.weapon_base_sprite, self.weapon_pos)
+    
+    def draw_bullet_sfx(self):
+        if self.sfx_length_count < self.sfx_length:
+            sfx = pygame.transform.scale(self.sfx[0], (self.shot_projection, self.shot_projection))
+            sfx_rect = sfx.get_rect()
+            self.screen.blit(sfx, (settings.HALF_WIDTH - sfx_rect.width // 2, settings.HALF_HEIGHT - sfx_rect.height // 2))
+            self.sfx_length_count += 1
+            self.sfx.rotate(-1)
 
 
     def draw_fps(self, clock):

@@ -58,6 +58,10 @@ class Sprites:
             SpriteObject(self.sprite_params['sprite_devil'], (7, 4)),
             SpriteObject(self.sprite_params['sprite_flame'], (8.6, 5.6)),
         ]
+    
+    @property
+    def sprite_shot(self):
+        return min([obj.is_on_fire for obj in self.list_of_objects], default=(float('inf'), 0))
 
 
 class SpriteObject:
@@ -73,46 +77,56 @@ class SpriteObject:
         self.side = 30
         self.animation_count = 0
         self.x, self.y = pos[0] * settings.TILE_SIZE, pos[1] * settings.TILE_SIZE
-        self.pos = self.x - self.side // 2, self.y - self.side // 2
 
         if self.viewing_angles:
             self.sprite_angles = [frozenset(range(i, i + 45)) for i in range(0, 360, 45)]
             self.sprite_positions = {angle: pos for angle, pos in zip(self.sprite_angles, self.sprite)}
     
+    @property
+    def is_on_fire(self):
+        if settings.CENTRAL_RAY - self.side // 2 < self.current_ray < settings.CENTRAL_RAY + self.side // 2 and self.blocked:
+            return self.distance_to_sprite, self.proj_height
+        return float('inf'), None
+
+    @property
+    def pos(self):
+        return self.x - self.side // 2, self.y - self.side // 2
+
+
     def object_locate(self, player):
         dx, dy = self.x - player.x, self.y - player.y
-        distance_to_sprite = math.sqrt(dx ** 2 + dy ** 2)
+        self.distance_to_sprite = math.sqrt(dx ** 2 + dy ** 2)
 
-        theta_angle = math.atan2(dy, dx)
-        gamma_angle = theta_angle - player.angle
+        self.theta_angle = math.atan2(dy, dx)
+        gamma_angle = self.theta_angle - player.angle
 
         if dx > 0 and 180 <= math.degrees(player.angle) <= 360 or dx < 0 and dy < 0:
             gamma_angle += settings.DOUBLE_PI
-        
+          
         delta_rays = int(gamma_angle / settings.DELTA_ANGLE)
-        current_ray = settings.CENTRAL_RAY + delta_rays
-        distance_to_sprite *= math.cos(settings.HALF_FOV - current_ray * settings.DELTA_ANGLE)
+        self.current_ray = settings.CENTRAL_RAY + delta_rays
+        self.distance_to_sprite *= math.cos(settings.HALF_FOV - self.current_ray * settings.DELTA_ANGLE)
 
-        fake_ray = current_ray + settings.FAKE_RAYS
-        if 0 <= fake_ray <= settings.FAKE_RAYS_RANGE and distance_to_sprite > 30:
-            proj_height = min(int(settings.PROJ_COEFF / distance_to_sprite * self.scale), settings.DOUBLE_HEIGHT)
-            half_proj_height = proj_height // 2
+        fake_ray = self.current_ray + settings.FAKE_RAYS
+        if 0 <= fake_ray <= settings.FAKE_RAYS_RANGE and self.distance_to_sprite > 30:
+            self.proj_height = min(int(settings.PROJ_COEFF / self.distance_to_sprite * self.scale), settings.DOUBLE_HEIGHT)
+            half_proj_height = self.proj_height // 2
             shift = half_proj_height * self.shift
 
             # change sprite relative to the player angle
             if self.viewing_angles:
-                if theta_angle < 0:
-                    theta_angle += settings.DOUBLE_PI
-                theta_angle = 360 - int(math.degrees(theta_angle))
+                if self.theta_angle < 0:
+                    self.theta_angle += settings.DOUBLE_PI
+                self.theta_angle = 360 - int(math.degrees(self.theta_angle))
 
                 for angles in self.sprite_angles:
-                    if theta_angle in angles:
+                    if self.theta_angle in angles:
                         self.sprite = self.sprite_positions[angles]
                         break
 
             # animate sprite
             sprite_object = self.sprite
-            if self.animation and distance_to_sprite < self.animation_distance:
+            if self.animation and self.distance_to_sprite < self.animation_distance:
                 sprite_object = self.animation[0]
                 if self.animation_count < self.animation_speed:
                     self.animation_count += 1
@@ -121,8 +135,8 @@ class SpriteObject:
                     self.animation_count = 0
             
             # scale and position sprite
-            sprite_pos = (current_ray * settings.SCALE - half_proj_height, settings.HALF_HEIGHT - half_proj_height + shift)
-            sprite = pygame.transform.scale(sprite_object, (proj_height, proj_height))
-            return (distance_to_sprite, sprite, sprite_pos)
+            sprite_pos = (self.current_ray * settings.SCALE - half_proj_height, settings.HALF_HEIGHT - half_proj_height + shift)
+            sprite = pygame.transform.scale(sprite_object, (self.proj_height, self.proj_height))
+            return (self.distance_to_sprite, sprite, sprite_pos)
         else:
             return (False,)
