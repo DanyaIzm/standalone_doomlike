@@ -97,8 +97,8 @@ class SpriteObject:
         dx, dy = self.x - player.x, self.y - player.y
         self.distance_to_sprite = math.sqrt(dx ** 2 + dy ** 2)
 
-        self.theta_angle = math.atan2(dy, dx)
-        gamma_angle = self.theta_angle - player.angle
+        theta_angle = math.atan2(dy, dx)
+        gamma_angle = theta_angle - player.angle
 
         if dx > 0 and 180 <= math.degrees(player.angle) <= 360 or dx < 0 and dy < 0:
             gamma_angle += settings.DOUBLE_PI
@@ -115,12 +115,12 @@ class SpriteObject:
 
             # change sprite relative to the player angle
             if self.viewing_angles:
-                if self.theta_angle < 0:
-                    self.theta_angle += settings.DOUBLE_PI
-                self.theta_angle = 360 - int(math.degrees(self.theta_angle))
+                if theta_angle < 0:
+                    theta_angle += settings.DOUBLE_PI
+                theta_angle = 360 - int(math.degrees(theta_angle))
 
                 for angles in self.sprite_angles:
-                    if self.theta_angle in angles:
+                    if theta_angle in angles:
                         self.sprite = self.sprite_positions[angles]
                         break
 
