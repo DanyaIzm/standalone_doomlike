@@ -18,6 +18,7 @@ FPS = 60
 PLAYER_START_POS = (HALF_WIDTH // 4, HALF_HEIGHT - 50)
 PLAYER_START_ANGLE = 0
 PLAYER_NORMAL_SPEED = 2
+MOUSE_OFFSET = 100       # Screen_border - mouse_position, whem mouse will be teleported to the center
 
 # MAP SETTINGS
 TILE_SIZE = 100

@@ -12,6 +12,8 @@ class Player:
         self.angle = settings.PLAYER_START_ANGLE
         self.sensitivity = 0.004
 
+        self._last_mouse_position = settings.HALF_WIDTH
+
         # collision parameters
         self.side = 50
         self.rect = pygame.Rect(self.x, self.y, self.side, self.side)
@@ -98,8 +100,17 @@ class Player:
             self.angle += 0.02
     
     def _control_mouse(self):
-        if pygame.mouse.get_focused():
-            difference = pygame.mouse.get_pos()[0] - settings.HALF_WIDTH
+        current_mouse_position = pygame.mouse.get_pos()[0]
+        current_mouse_y_postition = pygame.mouse.get_pos()[1]
+        
+        difference = current_mouse_position - self._last_mouse_position
+        self.angle += difference * self.sensitivity
+        
+        if current_mouse_position - settings.MOUSE_OFFSET <= 0 or current_mouse_position + settings.MOUSE_OFFSET >= settings.WIDTH:
+            current_mouse_position = settings.HALF_WIDTH
             pygame.mouse.set_pos((settings.HALF_WIDTH, settings.HALF_HEIGHT))
-            self.angle += difference * self.sensitivity
+        
+        if current_mouse_y_postition - settings.MOUSE_OFFSET <= 0 or current_mouse_y_postition + settings.MOUSE_OFFSET >= settings.HEIGHT:
+            pygame.mouse.set_pos((current_mouse_position, settings.HALF_HEIGHT))
 
+        self._last_mouse_position = current_mouse_position
