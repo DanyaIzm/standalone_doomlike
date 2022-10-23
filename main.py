@@ -22,8 +22,10 @@ pygame.mouse.set_visible(False)
 sprites = sprite_object.Sprites()
 player = Player(sprites)
 
-drawing = Drawing(screen, minimap_surface, player)
+drawing = Drawing(screen, minimap_surface, player, clock)
 interaction = Interaction(player, sprites, drawing)
+
+interaction.play_music()
 
 
 while True:
@@ -41,6 +43,7 @@ while True:
     interaction.interaction_objects()
     interaction.npc_aciton()
     interaction.clear_world()
+    interaction.check_win()
 
     drawing.draw_fps(clock)
 

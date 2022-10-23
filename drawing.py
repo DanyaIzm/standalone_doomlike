@@ -1,6 +1,8 @@
 import pygame
 import math
+import sys
 from collections import deque
+from random import randrange
 
 import settings
 from settings import Colors
@@ -9,12 +11,16 @@ from map import mini_world_map
 
 
 class Drawing:
-    def __init__(self, screen, minimap_surface, player):
+    def __init__(self, screen, minimap_surface, player, clock):
         self.screen = screen
         self.minimap_surface = minimap_surface
         self.player = player
 
+        self.clock = clock
+
         self.font = pygame.font.SysFont('Arial', 36, bold=True)
+        self.font_win = pygame.font.Font('font/font.ttf', 144, bold=True)
+
         self.textures = {
             1: pygame.image.load('img/wall3.png').convert(),
             2: pygame.image.load('img/wall4.png').convert(),
@@ -32,8 +38,9 @@ class Drawing:
         self.shot_length = len(self.weapon_shot_animation)
         self.shot_length_count = 0
         self.shot_animation_speed = 3
-        self.shot_anumaton_count = 0
+        self.shot_animation_count = 0
         self.shot_animation_trigger = True
+        self.shot_sound = pygame.mixer.Sound('sound/shotgun.wav')
 
         # sfx parameters
         self.sfx = deque([pygame.image.load(f'sprites/weapons/sfx/{i}.png').convert_alpha() for i in range(9)])
@@ -55,14 +62,16 @@ class Drawing:
 
     def draw_player_weapon(self, shots):
         if self.player.shot:
+            if not self.shot_animation_count and not self.shot_length_count:
+                self.shot_sound.play()
             self.shot_projection = min(shots)[1] // 2
             self.draw_bullet_sfx()
             shot_sprite = self.weapon_shot_animation[0]
             self.screen.blit(shot_sprite, self.weapon_pos)
-            self.shot_anumaton_count += 1
-            if self.shot_anumaton_count == self.shot_animation_speed:
+            self.shot_animation_count += 1
+            if self.shot_animation_count == self.shot_animation_speed:
                 self.weapon_shot_animation.rotate(-1)
-                self.shot_anumaton_count = 0
+                self.shot_animation_count = 0
                 self.shot_length_count += 1
                 self.shot_animation_trigger = False
             if self.shot_length_count == self.shot_length:
@@ -107,3 +116,12 @@ class Drawing:
             pygame.draw.rect(self.minimap_surface, Colors.DARKBROWN, (x, y, settings.MAP_TILE_SIZE, settings.MAP_TILE_SIZE))
 
         self.screen.blit(self.minimap_surface, settings.MAP_POS)
+
+    def draw_win(self):
+        win_text = self.font_win.render('YOU WIN!!!', 1, (randrange(40, 120), 0, 0))
+        rect = pygame.Rect(0, 0, 1000, 300)
+        rect.center = settings.HALF_WIDTH, settings.HALF_HEIGHT
+        pygame.draw.rect(self.screen, Colors.BLACK, rect, border_radius=50)
+        self.screen.blit(win_text, (rect.centerx - 430, rect.centery - 140))
+        pygame.display.flip()
+        self.clock.tick(15)

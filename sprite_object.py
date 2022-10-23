@@ -140,6 +140,13 @@ class Sprites:
             SpriteObject(self.sprite_params['sprite_flame'], (8.6, 5.6)),
             SpriteObject(self.sprite_params['sprite_door_v'], (3.5, 3.5)),
             SpriteObject(self.sprite_params['sprite_door_h'], (1.5, 4.5)),
+            SpriteObject(self.sprite_params['npc_soldier0'], (2.5, 1.5)),
+            # SpriteObject(self.sprite_params['npc_soldier0'], (5.51, 1.5)),
+            # SpriteObject(self.sprite_params['npc_soldier0'], (6.61, 2.92)),
+            # SpriteObject(self.sprite_params['npc_soldier0'], (7.68, 1.47)),
+            # SpriteObject(self.sprite_params['npc_soldier0'], (8.75, 3.65)),
+            # SpriteObject(self.sprite_params['npc_soldier0'], (1.27, 11.5)),
+            # SpriteObject(self.sprite_params['npc_soldier0'], (1.26, 8.29)),
         ]
     
     @property
