@@ -29,6 +29,10 @@ class Drawing:
             'SKY': pygame.image.load('img/sky1.png').convert(),
         }
 
+        # menu 
+        self.menu_trigger = True
+        self.menu_picture = pygame.image.load('img/bg.jpg').convert()
+
         # weapon parameters
         self.weapon_base_sprite = pygame.image.load('sprites/weapons/shotgun/base/0.png').convert_alpha()
         self.weapon_shot_animation = deque([pygame.image.load(f'sprites/weapons/shotgun/shot/{i}.png').convert_alpha()
@@ -125,3 +129,51 @@ class Drawing:
         self.screen.blit(win_text, (rect.centerx - 430, rect.centery - 140))
         pygame.display.flip()
         self.clock.tick(15)
+
+    def draw_menu(self):
+        x = 0
+        button_font = pygame.font.Font('font/font.ttf', 72)
+        label_font = pygame.font.Font('font/font1.otf', 400)
+        start = button_font.render('START', True, pygame.Color('lightgray'))
+        button_start= pygame.Rect(0, 0, 400, 150)
+        button_start.center = settings.HALF_WIDTH, settings.HALF_HEIGHT
+        exit = button_font.render('EXIT ', True, pygame.Color('lightgray'))
+        button_exit= pygame.Rect(0, 0, 400, 150)
+        button_exit.center = settings.HALF_WIDTH, settings.HALF_HEIGHT + 200
+
+        while self.menu_trigger:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+            
+            self.screen.blit(self.menu_picture, (0, 0), (x % settings.WIDTH, settings.HALF_HEIGHT, settings.WIDTH, settings.HEIGHT))
+            x += 1
+
+            pygame.draw.rect(self.screen, Colors.BLACK, button_start, border_radius=25, width=10)
+            self.screen.blit(start, (button_start.centerx - 130, button_start.centery - 70))
+
+            pygame.draw.rect(self.screen, Colors.BLACK, button_exit, border_radius=25, width=10)
+            self.screen.blit(exit, (button_exit.centerx - 85, button_exit.centery - 70))
+
+            color = randrange(40)
+            label = label_font.render('DOOM', True, (color, color, color))
+            self.screen.blit(label, (settings.HALF_WIDTH - label.get_rect().width // 2, -30))
+
+            mouse_pos = pygame.mouse.get_pos()
+            mouse_click = pygame.mouse.get_pressed()
+
+            if button_start.collidepoint(mouse_pos):
+                pygame.draw.rect(self.screen, Colors.BLACK, button_start, border_radius=25)
+                self.screen.blit(start, (button_start.centerx - 130, button_start.centery - 70))
+                if mouse_click[0]:
+                    self.menu_trigger = False
+            elif button_exit.collidepoint(mouse_pos):
+                pygame.draw.rect(self.screen, Colors.BLACK, button_exit, border_radius=25)
+                self.screen.blit(exit, (button_exit.centerx - 85, button_exit.centery - 70))
+                if mouse_click[0]:
+                    pygame.quit()
+                    sys.exit()
+
+            pygame.display.flip()
+            self.clock.tick(20)

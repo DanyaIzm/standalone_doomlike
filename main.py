@@ -16,14 +16,16 @@ minimap_surface = pygame.Surface(settings.MINIMAP_RESOLUTION)
 
 clock = pygame.time.Clock()
 
-# Set mouse pointer to invisible state
-pygame.mouse.set_visible(False)
-
 sprites = sprite_object.Sprites()
 player = Player(sprites)
 
 drawing = Drawing(screen, minimap_surface, player, clock)
 interaction = Interaction(player, sprites, drawing)
+
+drawing.draw_menu()
+
+# Set mouse pointer to invisible state
+pygame.mouse.set_visible(False)
 
 interaction.play_music()
 
