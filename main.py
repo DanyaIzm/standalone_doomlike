@@ -40,6 +40,7 @@ while True:
 
     interaction.interaction_objects()
     interaction.npc_aciton()
+    interaction.clear_world()
 
     drawing.draw_fps(clock)
 

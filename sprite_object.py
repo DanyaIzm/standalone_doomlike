@@ -3,6 +3,10 @@ import math
 from collections import deque
 
 import settings
+from ray_casting import _mapping
+from numba.core import types
+from numba.typed.typeddict import Dict
+from numba import int32
 
 
 class Sprites:
@@ -134,11 +138,23 @@ class Sprites:
             SpriteObject(self.sprite_params['sprite_pin'], (8.7, 2.5)),
             SpriteObject(self.sprite_params['npc_devil'], (7, 4)),
             SpriteObject(self.sprite_params['sprite_flame'], (8.6, 5.6)),
+            SpriteObject(self.sprite_params['sprite_door_v'], (3.5, 3.5)),
+            SpriteObject(self.sprite_params['sprite_door_h'], (1.5, 4.5)),
         ]
     
     @property
     def sprite_shot(self):
         return min([obj.is_on_fire for obj in self.list_of_objects], default=(float('inf'), 0))
+
+    @property
+    def blocked_doors(self):
+        blocked_doors = Dict.empty(key_type=types.UniTuple(int32, 2), value_type=int32)
+        for object in self.list_of_objects:
+            if object.flag in {'door_h', 'door_v'} and object.blocked:
+                i, j = _mapping(object.x, object.y)
+                blocked_doors[(i, j)] = 0
+        
+        return blocked_doors
 
 
 class SpriteObject:
@@ -165,7 +181,7 @@ class SpriteObject:
         self.npc_action_trigger = False
         self.door_open_trigger = False
         self.door_prev_pos = self.y if self.flag == 'door_h' else self.x
-        self.delete = False
+        self.deleted = False
         if self.viewing_angles:
             if len(self.sprite) == 8:
                 self.sprite_angles = [frozenset(range(338, 361)) | frozenset(range(0, 23))] + \
@@ -199,26 +215,36 @@ class SpriteObject:
           
         delta_rays = int(gamma_angle / settings.DELTA_ANGLE)
         self.current_ray = settings.CENTRAL_RAY + delta_rays
-        self.distance_to_sprite *= math.cos(settings.HALF_FOV - self.current_ray * settings.DELTA_ANGLE)
+
+        if self.flag not in {'door_h', 'door_v'}:
+            self.distance_to_sprite *= math.cos(settings.HALF_FOV - self.current_ray * settings.DELTA_ANGLE)
 
         fake_ray = self.current_ray + settings.FAKE_RAYS
         if 0 <= fake_ray <= settings.FAKE_RAYS_RANGE and self.distance_to_sprite > 30:
-            self.proj_height = min(int(settings.PROJ_COEFF / self.distance_to_sprite), settings.DOUBLE_HEIGHT)
+            self.proj_height = min(int(settings.PROJ_COEFF / self.distance_to_sprite),
+                                   settings.DOUBLE_HEIGHT if self.flag not in {'door_h', 'door_v'} else settings.HEIGHT)
             sprite_width = int(self.proj_height * self.scale[0])
             sprite_heigth = int(self.proj_height * self.scale[1])
             half_sprite_width = sprite_width // 2
             half_sprite_height = sprite_heigth // 2
             shift = half_sprite_height * self.shift
 
-            if self.is_dead and self.is_dead != 'immortal':
-                sprite_object = self.play_death_animation()
-                shift = half_sprite_height * self.dead_shift
-                sprite_heigth = int(sprite_heigth / 1.3)
-            elif self.npc_action_trigger:
-                sprite_object = self.play_npc_action()
-            else:
+            # logic for, npc and decorations
+            if self.flag in {'door_h', 'door_v'}:
+                if self.door_open_trigger:
+                    self.open_door()
                 self.sprite = self.get_visible_sprite(theta_angle)
                 sprite_object = self.play_sprite_animation()
+            else:
+                if self.is_dead and self.is_dead != 'immortal':
+                    sprite_object = self.play_death_animation()
+                    shift = half_sprite_height * self.dead_shift
+                    sprite_heigth = int(sprite_heigth / 1.3)
+                elif self.npc_action_trigger:
+                    sprite_object = self.play_npc_action()
+                else:
+                    self.sprite = self.get_visible_sprite(theta_angle)
+                    sprite_object = self.play_sprite_animation()
             
             # scale and position sprite
             sprite_pos = (self.current_ray * settings.SCALE - half_sprite_width, settings.HALF_HEIGHT - half_sprite_height + shift)
@@ -273,3 +299,16 @@ class SpriteObject:
             self.animation_count = 0
         
         return sprite_object
+    
+    def open_door(self):
+        if self.flag == 'door_h':
+            self.y -= 3
+
+            if abs(self.y - self.door_prev_pos) > settings.TILE_SIZE:
+                self.delete = True
+        elif self.flag == 'door_v':
+            self.x -= 3
+
+            if abs(self.x - self.door_prev_pos) > settings.TILE_SIZE:
+                self.deleted = True
+

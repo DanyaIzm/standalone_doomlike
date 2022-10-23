@@ -8,7 +8,7 @@ from ray_casting import _mapping
 
 
 @njit(fastmath=True, cache=True)
-def ray_casting_npc_to_player(npc_x, npc_y, world_map, player_pos):
+def ray_casting_npc_to_player(npc_x, npc_y, blocked_doors, world_map, player_pos):
     xo, yo = player_pos
     xm, ym = _mapping(xo, yo)
     delta_x, delta_y = xo - npc_x, yo - npc_y
@@ -27,7 +27,7 @@ def ray_casting_npc_to_player(npc_x, npc_y, world_map, player_pos):
         yv = yo + depth_v * angle_sin
         tile_v = _mapping(x + dx, yv)
 
-        if tile_v in world_map:
+        if tile_v in world_map or tile_v in blocked_doors:
             return False
         x += dx * settings.TILE_SIZE
 
@@ -39,7 +39,7 @@ def ray_casting_npc_to_player(npc_x, npc_y, world_map, player_pos):
         xh = xo + depth_h * angle_cos
         tile_h = _mapping(xh, y + dy)
 
-        if tile_h in world_map:
+        if tile_h in world_map or tile_h in blocked_doors:
             return False
         y += dy * settings.TILE_SIZE
     
@@ -57,15 +57,18 @@ class Interaction:
             for object in sorted(self.sprites.list_of_objects, key=lambda object: object.distance_to_sprite):
                 if object.is_on_fire[1]:
                     if object.is_dead != 'immortal' and not object.is_dead:
-                        if ray_casting_npc_to_player(object.x, object.y, world_map, self.player.pos):
+                        if ray_casting_npc_to_player(object.x, object.y, self.sprites.blocked_doors, world_map, self.player.pos):
                             object.is_dead = True
                             object.blocked = None
+                    if object.flag in {'door_h', 'door_v'} and object.distance_to_sprite < settings.TILE_SIZE:
+                        object.door_open_trigger = True
+                        object.blocked = None
                     break
     
     def npc_aciton(self):
         for object in self.sprites.list_of_objects:
             if object.flag == 'npc' and not object.is_dead:
-                if ray_casting_npc_to_player(object.x, object.y, world_map, self.player.pos):
+                if ray_casting_npc_to_player(object.x, object.y, self.sprites.blocked_doors, world_map, self.player.pos):
                     object.npc_action_trigger = True
                     self.move_npc(object)
                 else:
@@ -77,3 +80,7 @@ class Interaction:
             dy = object.y - self.player.pos[1]
             object.x = object.x + 1 if dx < 0 else object.x - 1
             object.y = object.y + 1 if dy < 0 else object.y - 1
+    
+    def clear_world(self):
+        deleted_objects = self.sprites.list_of_objects[:]
+        [self.sprites.list_of_objects.remove(object) for object in deleted_objects if object.deleted]
