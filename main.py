@@ -7,6 +7,7 @@ from ray_casting import ray_casting_walls
 
 from player import Player
 from drawing import Drawing
+from interaction import Interaction
 
 
 pygame.init()
@@ -22,6 +23,7 @@ sprites = sprite_object.Sprites()
 player = Player(sprites)
 
 drawing = Drawing(screen, minimap_surface, player)
+interaction = Interaction(player, sprites, drawing)
 
 
 while True:
@@ -35,6 +37,9 @@ while True:
     drawing.draw_minimap(player)
 
     drawing.draw_player_weapon([wall_shot, sprites.sprite_shot])
+
+    interaction.interaction_objects()
+    interaction.npc_aciton()
 
     drawing.draw_fps(clock)
 

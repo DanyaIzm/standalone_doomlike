@@ -21,7 +21,10 @@ def ray_casting(player_pos, player_angle, world_map):
 
     for ray in range(settings.NUM_RAYS):
         angle_sin = math.sin(current_angle)
+        angle_sin = angle_sin if angle_sin else 0.000001
         angle_cos = math.cos(current_angle)
+        angle_cos = angle_cos if angle_cos else 0.000001
+
 
         # VERTICALS
         x, dx = (xm + settings.TILE_SIZE, 1) if angle_cos >= 0 else (xm, -1)
